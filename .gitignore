@@ -1,0 +1,14 @@
+# Environnement
+.venv/
+
+# PyCharm
+.idea/
+
+# Audio files
+audio/
+
+# Cache
+__pycache__/
+
+# OS
+.DS_Store
