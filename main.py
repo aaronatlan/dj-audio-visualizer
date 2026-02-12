@@ -1,6 +1,7 @@
 import librosa
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
 
 
 y, sr = librosa.load("audio/track.flac")
@@ -115,3 +116,19 @@ for t in drops:
 plt.legend()
 plt.savefig("outputs/drops.png")
 plt.close()
+
+
+with open("outputs/breaks.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["start_s", "end_s"])
+    for start, end in breaks:
+        t_start = energy_t[start]
+        t_end = energy_t[end - 1]
+        writer.writerow([t_start, t_end])
+
+with open("outputs/drops.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["drop_s"])
+    for t in drops:
+        writer.writerow([t])
+
