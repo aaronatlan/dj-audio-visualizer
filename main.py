@@ -35,7 +35,7 @@ plt.close()
 energy_smooth = np.convolve(energy_norm, np.ones(50) / 50, mode="same")
 dt = hop_length / sr
 
-low_thr = 0.25
+low_thr = np.percentile(energy_smooth, 20)
 is_low = energy_smooth < low_thr
 min_break_s = 2.0
 min_break_n = int(min_break_s / dt)
@@ -57,10 +57,6 @@ if start is not None:
     if (end - start) >= min_break_n:
         breaks.append((start, end))
 
-for start, end in breaks:
-    t_start = energy_t[start]
-    t_end = energy_t[end -1]
-    print(f"{t_start:.2f}s -> {t_end:.2f}s")
 
 plt.plot(energy_t, energy_smooth)
 plt.xlabel("Temps (s)")
@@ -84,17 +80,20 @@ plt.close()
 rise_window_s = 0.2
 rise_window_n = int(rise_window_s / dt)
 
-rise_thr = 0.10
-
-cooldown_s = 3.0
+cooldown_s = 20.0
 cooldown_n = int(cooldown_s / dt)
 
 rise = np.zeros_like(energy_smooth)
 rise[rise_window_n:] = energy_smooth[rise_window_n:] - energy_smooth[:-rise_window_n]
 
+rise_thr = np.percentile(rise[rise_window_n:], 99)
+
+ignore_start_s = 20.0
+ignore_start_n = int(ignore_start_s / dt)
+
 drops = []
 last = -10**9
-for i in range(rise_window_n, len(rise)):
+for i in range(max(rise_window_n, ignore_start_n), len(rise)):
     if i - last < cooldown_n:
         continue
     elif rise[i] >= rise_thr:
@@ -131,4 +130,3 @@ with open("outputs/drops.csv", "w", newline="", encoding="utf-8") as f:
     writer.writerow(["drop_s"])
     for t in drops:
         writer.writerow([t])
-
